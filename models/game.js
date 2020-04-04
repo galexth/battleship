@@ -5,6 +5,14 @@ const schema = new mongoose.Schema({
         type: Array,
         required: true
     },
+    data: {
+        type: JSON,
+        required: true
+    },
+    rules: {
+        type: JSON,
+        required: true
+    },
     status: {
         type: String,
         required: true

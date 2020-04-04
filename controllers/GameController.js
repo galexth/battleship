@@ -4,6 +4,7 @@ const { check, validationResult } = require('express-validator')
 
 const Game = require('../models/game');
 const Board = require('../lib/engine/board');
+const Point = require('../lib/engine/point');
 const rules = require('../lib/engine/rules');
 
 module.exports.index = wrap(async (req, res) => {
@@ -28,9 +29,9 @@ module.exports.show = wrap(async (req, res) => {
 
     const board = new Board();
 
-    board.load(model.layout);
+    board.loadGame(model);
 
-    res.status(201).json(model);
+    res.status(201).json({ model, layout: board.draw() });
 });
 
 module.exports.store = wrap(async (req, res) => {
@@ -48,13 +49,15 @@ module.exports.store = wrap(async (req, res) => {
         });
     }
 
-    const board = new Board(rows, columns);
+    const board = new Board();
 
-    board.init();
+    board.newGame(rules.default, rows, columns);
 
     const model = await Game.create({
-        status: board.getStatus(),
-        layout: board.compress()
+        status: board.status,
+        layout: board.layout,
+        data: board.data,
+        rules: board.rules
     });
 
     res.status(201).json(model);
@@ -62,10 +65,10 @@ module.exports.store = wrap(async (req, res) => {
 
 module.exports.placeShip = wrap(async (req, res) => {
 
-    const { row, column, type, direction } = req.body;
+    const { x, y, type, direction } = req.body;
 
-    await check('row').notEmpty().withMessage('row is required.').run(req);
-    await check('column').notEmpty().withMessage('column is required.').run(req);
+    await check('x').notEmpty().withMessage('column is required.').run(req);
+    await check('y').notEmpty().withMessage('row is required.').run(req);
     await check('type').isIn(Object.keys(rules.ships)).withMessage('unknown type.').run(req);
     await check('direction').isIn(['up', 'down', 'left', 'right']).withMessage('wrong direction.').run(req);
 
@@ -85,16 +88,17 @@ module.exports.placeShip = wrap(async (req, res) => {
 
     const board = new Board();
 
-    board.load(model.layout);
+    board.loadGame(model);
 
-    if (! board.placeShip(type, row, column, direction)) {
+    if (! board.placeShip(type, new Point(x, y), direction)) {
         return res.status(422).json({
             errors: 'The ship can\'t be placed here.'
         });
     }
 
-    model.layout = board.compress();
     model.status = board.status;
+    model.layout = board.layout;
+    model.data = board.data;
 
     await model.save();
 
@@ -103,7 +107,7 @@ module.exports.placeShip = wrap(async (req, res) => {
 
 module.exports.attack = wrap(async (req, res) => {
 
-    const { row, column } = req.body;
+    const { x, y } = req.body;
 
     const model = await Game.findById(req.params.id);
 
@@ -113,20 +117,15 @@ module.exports.attack = wrap(async (req, res) => {
         });
     }
 
-    if (model.status !== 'ready') {
-        return res.status(422).json({
-            errors: 'Game is either not ready or already been finished.'
-        });
-    }
-
     const board = new Board();
 
-    board.load(model.layout);
+    board.loadGame(model);
 
-    const message = board.hit(row, column);
+    const message = board.hit(new Point(x, y));
 
     model.status = board.status;
-    model.layout = board.compress();
+    model.layout = board.layout;
+    model.data = board.data;
 
     await model.save();
 
