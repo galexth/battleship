@@ -280,7 +280,8 @@ module.exports = {
                 "nonwords": true,
                 "overrides": {
                     "new": false,
-                    "++": false
+                    "++": false,
+                    "--": false
                 }
             }],
         'spaced-comment': [
