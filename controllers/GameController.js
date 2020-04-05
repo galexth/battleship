@@ -24,7 +24,7 @@ module.exports.show = wrap(async (req, res) => {
 
     if (! model) {
         return res.status(404).json({
-            errors: 'Game not found.'
+            error: 'Game not found.'
         });
     }
 
@@ -32,7 +32,7 @@ module.exports.show = wrap(async (req, res) => {
 
     board.loadGame(model);
 
-    res.status(201).json({ model, layout: board.draw() });
+    res.status(201).json(model);
 });
 
 module.exports.store = wrap(async (req, res) => {
@@ -77,13 +77,13 @@ module.exports.ship = wrap(async (req, res) => {
 
     if (! model) {
         return res.status(404).json({
-            errors: 'Game not found.'
+            errors: ['Game not found.']
         });
     }
 
     if (model.status !== constants.STATUS_NEW) {
         return res.status(422).json({
-            errors: 'All ships are already placed.'
+            errors: ['All ships are already placed.']
         });
     }
 
@@ -91,27 +91,21 @@ module.exports.ship = wrap(async (req, res) => {
 
     board.loadGame(model);
 
-    if (! board.placeShip(type, new Point(x, y), direction)) {
-        return res.status(422).json({
-            errors: 'The ship can\'t be placed here.'
-        });
+    try {
+        board.placeShip(type, new Point(x, y), direction);
+    } catch (e) {
+        return res.status(422).json({ errors: [e.message] });
     }
 
     model.status = board.status;
     model.layout = board.layout;
     model.data.history = board.history;
 
-    var message = `A ${type} placed.`;
-
-    if (board.status === constants.STATUS_READY) {
-        message = 'The game is ready.';
-    }
-
     model.markModified('layout');
     model.markModified('data');
     await model.save();
 
-    res.json({ model, message });
+    res.json(model);
 });
 
 module.exports.attack = wrap(async (req, res) => {
@@ -122,7 +116,7 @@ module.exports.attack = wrap(async (req, res) => {
 
     if (! model) {
         return res.status(404).json({
-            errors: 'Game not found.'
+            errors: ['Game not found.']
         });
     }
 
@@ -130,7 +124,11 @@ module.exports.attack = wrap(async (req, res) => {
 
     board.loadGame(model);
 
-    const message = board.hit(new Point(x, y));
+    try {
+        const message = board.hit(new Point(x, y));
+    } catch (e) {
+        return res.status(422).json({ errors: [e.message] });
+    }
 
     model.status = board.status;
     model.layout = board.layout;
