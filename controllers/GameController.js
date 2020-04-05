@@ -71,7 +71,12 @@ module.exports.ship = wrap(async (req, res) => {
     await check('x').notEmpty().withMessage('column is required.').run(req);
     await check('y').notEmpty().withMessage('row is required.').run(req);
     await check('type').isIn(Object.keys(rules)).withMessage('unknown type.').run(req);
-    await check('direction').isIn(['up', 'down', 'left', 'right']).withMessage('wrong direction.').run(req);
+    await check('direction').isIn([
+        constants.DIRECTION_UP,
+        constants.DIRECTION_DOWN,
+        constants.DIRECTION_LEFT,
+        constants.DIRECTION_RIGHT
+    ]).withMessage('wrong direction.').run(req);
 
     const model = await Game.findById(req.params.id);
 
