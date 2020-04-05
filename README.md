@@ -62,10 +62,6 @@ localhost:3000
 ```bash
 DEBUG=battleship:* node bin/www
 ```
-or
-```bash
-DEBUG=battleship:* nodemon bin/www
-```
 
 <h2 align="left">API</h2>
 
