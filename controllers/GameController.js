@@ -9,8 +9,8 @@ const rules = require('../lib/engine/rules');
 const constants = require('../lib/engine/constants');
 
 module.exports.index = wrap(async (req, res) => {
-    const offset = req.params.offset || 0;
-    const limit = req.params.limit || 10;
+    const offset = req.query.offset || 0;
+    const limit = req.query.limit || 10;
 
     const query = Game.find();
 
