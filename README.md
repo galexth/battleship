@@ -9,6 +9,8 @@
     The game layout is always revealed in the response. Its a test after all.
 </p>
 
+<h2 align="left">Install</h2>
+
 ```bash
 npm install
 ```
@@ -32,16 +34,19 @@ DEBUG=battleship:* nodemon bin/www
 <h2 align="left">API</h2>
 
 <h4 align="left">Get all games:</h4>
+
 ```bash
 GET /games?offset=0&limit=10
 ```
 
 <h4 align="left">Get a specific game:</h4>
+
 ```bash
 GET /games/:id
 ```
 
 <h4 align="left">Create a game:</h4>
+
 ```bash
 POST /games
 {
@@ -51,6 +56,7 @@ POST /games
 ```
 
 <h4 align="left">Place a ship:</h4>
+
 ```bash
 PUT /games/:id/ship
 {
@@ -62,6 +68,7 @@ PUT /games/:id/ship
 ```
 
 <h4 align="left">Hit the board:</h4>
+
 ```bash
 PUT /games/:id/attack
 {
