@@ -6,6 +6,7 @@ const Game = require('../models/game');
 const Board = require('../lib/engine/board');
 const Point = require('../lib/engine/point');
 const rules = require('../lib/engine/rules');
+const constants = require('../lib/engine/constants');
 
 module.exports.index = wrap(async (req, res) => {
     const offset = req.params.offset || 0;
@@ -56,7 +57,7 @@ module.exports.store = wrap(async (req, res) => {
     const model = await Game.create({
         status: board.status,
         layout: board.layout,
-        data: board.data,
+        data: { history: board.history },
         rules: board.rules
     });
 
@@ -80,7 +81,7 @@ module.exports.placeShip = wrap(async (req, res) => {
         });
     }
 
-    if (model.status !== Board.STATUS_NEW) {
+    if (model.status !== constants.STATUS_NEW) {
         return res.status(422).json({
             errors: 'All ships are already placed.'
         });
@@ -98,7 +99,7 @@ module.exports.placeShip = wrap(async (req, res) => {
 
     model.status = board.status;
     model.layout = board.layout;
-    model.data = board.data;
+    model.data.history = board.history;
 
     await model.save();
 
@@ -125,7 +126,7 @@ module.exports.attack = wrap(async (req, res) => {
 
     model.status = board.status;
     model.layout = board.layout;
-    model.data = board.data;
+    model.data.history = board.history;
 
     await model.save();
 
