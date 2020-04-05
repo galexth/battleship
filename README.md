@@ -9,10 +9,34 @@
     The game layout is always revealed in the response. Its a test after all.
 </p>
 
-<h2 align="left">Install</h2>
+<h2 align="left">Install on MacOS</h2>
+
+<p align="left">
+    In order to run this game on your os you need to install mongoDB and actully NodeJS.
+</p>
 
 ```bash
 npm install
+npm install -g migrate-mongo
+migrate-mongo up
+```
+
+<h2 align="left">Install with Vagrant</h2>
+
+<p align="left">
+    You need to install Vagrant and Virtual Box here. After run this code:
+</p>
+
+```bash
+vagrant up
+vagrant ssh
+cd /vagrant
+```
+
+```bash
+npm install
+sudo npm install -g migrate-mongo
+migrate-mongo up
 ```
 
 <h2 align="left">Testing</h2>
@@ -22,6 +46,14 @@ DEBUG=battleship:* npm test
 ```
 
 <h2 align="left">Http</h2>
+
+<p align="left">
+    The default host is:
+</p>
+
+```bash
+localhost:3000
+```
 
 ```bash
 DEBUG=battleship:* node bin/www
