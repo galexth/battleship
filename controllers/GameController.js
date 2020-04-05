@@ -129,8 +129,10 @@ module.exports.attack = wrap(async (req, res) => {
 
     board.loadGame(model);
 
+    var message = '';
+
     try {
-        const message = board.hit(new Point(x, y));
+        message = board.hit(new Point(x, y));
     } catch (e) {
         return res.status(422).json({ errors: [e.message] });
     }

@@ -8,6 +8,6 @@ router.route('/')
 
 router.route('/:id').get(controller.show);
 router.put('/:id/attack', controller.attack)
-    .post('/:id/ship', controller.ship);
+    .put('/:id/ship', controller.ship);
 
 module.exports = router;

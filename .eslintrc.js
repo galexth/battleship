@@ -12,6 +12,16 @@ module.exports = {
     'parserOptions': {
         'ecmaVersion': 2018
     },
+    "overrides": [
+        {
+            "files": [
+                "tests/*.test.js",
+            ],
+            "env": {
+                "jest": true
+            }
+        }
+    ],
     'rules': {
         'accessor-pairs': 'error',
         'array-bracket-newline': 'error',
