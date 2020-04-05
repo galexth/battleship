@@ -33,6 +33,10 @@ vagrant ssh
 cd /vagrant
 ```
 
+<p align="left">
+    Inside Vagrant environment:
+</p>
+
 ```bash
 npm install
 sudo npm install -g migrate-mongo
