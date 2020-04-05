@@ -64,13 +64,13 @@ module.exports.store = wrap(async (req, res) => {
     res.status(201).json(model);
 });
 
-module.exports.placeShip = wrap(async (req, res) => {
+module.exports.ship = wrap(async (req, res) => {
 
     const { x, y, type, direction } = req.body;
 
     await check('x').notEmpty().withMessage('column is required.').run(req);
     await check('y').notEmpty().withMessage('row is required.').run(req);
-    await check('type').isIn(Object.keys(rules.ships)).withMessage('unknown type.').run(req);
+    await check('type').isIn(Object.keys(rules)).withMessage('unknown type.').run(req);
     await check('direction').isIn(['up', 'down', 'left', 'right']).withMessage('wrong direction.').run(req);
 
     const model = await Game.findById(req.params.id);
@@ -101,9 +101,17 @@ module.exports.placeShip = wrap(async (req, res) => {
     model.layout = board.layout;
     model.data.history = board.history;
 
+    var message = `A ${type} placed.`;
+
+    if (board.status === constants.STATUS_READY) {
+        message = 'The game is ready.';
+    }
+
+    model.markModified('layout');
+    model.markModified('data');
     await model.save();
 
-    res.json(model);
+    res.json({ model, message });
 });
 
 module.exports.attack = wrap(async (req, res) => {
@@ -127,6 +135,8 @@ module.exports.attack = wrap(async (req, res) => {
     model.status = board.status;
     model.layout = board.layout;
     model.data.history = board.history;
+    model.markModified('layout');
+    model.markModified('data');
 
     await model.save();
 
