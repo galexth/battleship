@@ -25,6 +25,6 @@ const config = {
         resave: true,
         saveUninitialized: true
     }
-}
+};
 
 module.exports = config;

@@ -1,8 +1,8 @@
-const Board = require('./lib/engine/board');
+const Board = require('./lib/engine/Board');
 const rules = require('./lib/engine/rules');
-const math = require('mathjs');
+const mathjs = require('mathjs');
 
-const Point = require('./lib/engine/point');
+const Point = require('./lib/engine/Point');
 const constants = require('./lib/engine/constants');
 
 // var d = {};

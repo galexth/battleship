@@ -1,14 +1,12 @@
 const { wrap } = require('../support/helpers');
-const transform = require('../support/transformers/game/default');
+const defaultTransform = require('../support/transformers/game/defaultTransform');
 const Paginator = require('../support/paginator');
-const { check, validationResult } = require('express-validator')
+const { check, validationResult } = require('express-validator');
 
 const Game = require('../models/game');
-const Board = require('../lib/engine/board');
-const Point = require('../lib/engine/point');
+const Board = require('../lib/engine/Board');
 const rules = require('../lib/engine/rules');
 const constants = require('../lib/engine/constants');
-const Formatter = require('../lib/engine/simpleFormatter');
 
 module.exports.index = wrap(async (req, res) => {
     await check('offset').isInt({ min: 0 })
@@ -31,7 +29,7 @@ module.exports.index = wrap(async (req, res) => {
 
     const results = await new Paginator(query, offset, limit).paginate();
 
-    results.data = results.data.map((value) => value.toObject({ transform }));
+    results.data = results.data.map((value) => value.toObject({ transform: defaultTransform }));
 
     return res.json(results);
 });
@@ -49,7 +47,7 @@ module.exports.show = wrap(async (req, res) => {
 
     board.loadGame(model);
 
-    res.json(model.toObject({ transform }));
+    res.json(model.toObject({ transform: defaultTransform }));
 });
 
 module.exports.store = wrap(async (req, res) => {
@@ -78,7 +76,7 @@ module.exports.store = wrap(async (req, res) => {
         rules: board.rules
     });
 
-    res.status(201).json(model.toObject({ transform }));
+    res.status(201).json(model.toObject({ transform: defaultTransform }));
 });
 
 module.exports.ship = wrap(async (req, res) => {
@@ -122,7 +120,7 @@ module.exports.ship = wrap(async (req, res) => {
     board.loadGame(model);
 
     try {
-        board.placeShip(type, new Point(x, y), direction);
+        board.placeShip(type, { x, y }, direction);
     } catch (e) {
         return res.status(422).json({ errors: [e.message] });
     }
@@ -135,7 +133,7 @@ module.exports.ship = wrap(async (req, res) => {
     model.markModified('data');
     await model.save();
 
-    res.json(model.toObject({ transform }));
+    res.json(model.toObject({ transform: defaultTransform }));
 });
 
 module.exports.attack = wrap(async (req, res) => {
@@ -165,10 +163,10 @@ module.exports.attack = wrap(async (req, res) => {
 
     board.loadGame(model);
 
-    var message = '';
+    let message = '';
 
     try {
-        message = board.hit(new Point(x, y));
+        message = board.hit({ x, y });
     } catch (e) {
         return res.status(422).json({ errors: [e.message] });
     }
@@ -181,5 +179,5 @@ module.exports.attack = wrap(async (req, res) => {
 
     await model.save();
 
-    res.json({ model: model.toObject({ transform }), message });
+    res.json({ model: model.toObject({ transform: defaultTransform }), message });
 });
