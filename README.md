@@ -6,7 +6,7 @@
 
 <h2 align="left">Notes</h2>
 <p align="left">
-    The game layout is always revealed in the response. Its a test after all.
+    The game layout is hidden while playing.
 </p>
 
 <h2 align="left">Install on MacOS</h2>

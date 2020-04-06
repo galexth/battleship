@@ -1,4 +1,5 @@
 const { wrap } = require('../support/helpers');
+const transform = require('../support/transformers/game/default');
 const Paginator = require('../support/paginator');
 const { check, validationResult } = require('express-validator')
 
@@ -7,14 +8,30 @@ const Board = require('../lib/engine/board');
 const Point = require('../lib/engine/point');
 const rules = require('../lib/engine/rules');
 const constants = require('../lib/engine/constants');
+const Formatter = require('../lib/engine/simpleFormatter');
 
 module.exports.index = wrap(async (req, res) => {
+    await check('offset').isInt({ min: 0 })
+        .optional().withMessage('offset should be an integer greater or equals to 0.').run(req);
+    await check('limit').isInt({ min: 1 })
+        .optional().withMessage('limit should be an integer greater than 0.').run(req);
+
+    const errors = validationResult(req);
+
+    if (! errors.isEmpty()) {
+        return res.status(422).json({
+            errors: errors.mapped()
+        });
+    }
+
     const offset = req.query.offset || 0;
     const limit = req.query.limit || 10;
 
     const query = Game.find();
 
     const results = await new Paginator(query, offset, limit).paginate();
+
+    results.data = results.data.map((value) => value.toObject({ transform }));
 
     return res.json(results);
 });
@@ -32,15 +49,15 @@ module.exports.show = wrap(async (req, res) => {
 
     board.loadGame(model);
 
-    res.status(201).json(model);
+    res.json(model.toObject({ transform }));
 });
 
 module.exports.store = wrap(async (req, res) => {
 
-    const { rows, columns } = req.body;
+    await check('rows').isInt({ min: 10 }).optional().withMessage('the board should be at least 10 x 10.').run(req);
+    await check('columns').isInt({ min: 10 }).optional().withMessage('the board should be at least 10 x 10.').run(req);
 
-    await check('rows').isInt().isLength({ gt: 10 }).withMessage('the board should be at least 10 x 10.').run(req);
-    await check('columns').isInt().isLength({ gt: 10 }).withMessage('the board should be at least 10 x 10.').run(req);
+    const { rows, columns } = req.body;
 
     const errors = validationResult(req);
 
@@ -52,7 +69,7 @@ module.exports.store = wrap(async (req, res) => {
 
     const board = new Board();
 
-    board.newGame(rules.default, rows, columns);
+    board.newGame(rules.default, rows || 10, columns || 10);
 
     const model = await Game.create({
         status: board.status,
@@ -61,22 +78,30 @@ module.exports.store = wrap(async (req, res) => {
         rules: board.rules
     });
 
-    res.status(201).json(model);
+    res.status(201).json(model.toObject({ transform }));
 });
 
 module.exports.ship = wrap(async (req, res) => {
 
-    const { x, y, type, direction } = req.body;
-
-    await check('x').notEmpty().withMessage('column is required.').run(req);
-    await check('y').notEmpty().withMessage('row is required.').run(req);
-    await check('type').isIn(Object.keys(rules)).withMessage('unknown type.').run(req);
+    await check('x').isInt({ min: 0 }).withMessage('coordinates required.').run(req);
+    await check('y').isInt({ min: 0 }).withMessage('coordinates required.').run(req);
+    await check('type').isIn(Object.keys(rules.default)).withMessage('unknown type.').run(req);
     await check('direction').isIn([
         constants.DIRECTION_UP,
         constants.DIRECTION_DOWN,
         constants.DIRECTION_LEFT,
         constants.DIRECTION_RIGHT
     ]).withMessage('wrong direction.').run(req);
+
+    const errors = validationResult(req);
+
+    if (! errors.isEmpty()) {
+        return res.status(422).json({
+            errors: errors.mapped()
+        });
+    }
+
+    const { x, y, type, direction } = req.body;
 
     const model = await Game.findById(req.params.id);
 
@@ -110,10 +135,21 @@ module.exports.ship = wrap(async (req, res) => {
     model.markModified('data');
     await model.save();
 
-    res.json(model);
+    res.json(model.toObject({ transform }));
 });
 
 module.exports.attack = wrap(async (req, res) => {
+
+    await check('x').isInt({ min: 0 }).withMessage('coordinates required.').run(req);
+    await check('y').isInt({ min: 0 }).withMessage('coordinates required.').run(req);
+
+    const errors = validationResult(req);
+
+    if (! errors.isEmpty()) {
+        return res.status(422).json({
+            errors: errors.mapped()
+        });
+    }
 
     const { x, y } = req.body;
 
@@ -145,6 +181,5 @@ module.exports.attack = wrap(async (req, res) => {
 
     await model.save();
 
-    res.json({ model, message });
-
+    res.json({ model: model.toObject({ transform }), message });
 });

@@ -103,7 +103,13 @@ async function ship (gameId, type, x, y, direction) {
         .put(`/games/${gameId}/ship`)
         .send({ x, y, type, direction });
 
+    if (res.body.errors) {
+        console.log(res.body.errors);
+
+    }
+
     expect(res.statusCode).toEqual(200);
+
 
     return res;
 }
