@@ -4,10 +4,13 @@ const mathjs = require('mathjs');
 
 const Point = require('./lib/engine/Point');
 const constants = require('./lib/engine/constants');
+const formatter = require('./lib/engine/SimpleFormatter');
 
 // var d = {};
 
 // console.log(constants.POINT_BLANK);
+
+const b = [[0, 1], [2, 3]]
 
 // process.exit(1);
 
@@ -31,6 +34,7 @@ board.placeShip('destroyer', new Point(0, 6), 'right')
 board.placeShip('cruiser', new Point(4, 0), 'down')
 board.placeShip('cruiser', new Point(6, 0), 'down')
 board.placeShip('battleship', new Point(5, 5), 'down')
+console.log(board.draw(formatter, true));
 
 console.log(board.hit(new Point(0, 0)));
 console.log(board.hit(new Point(1, 0)));
@@ -78,4 +82,4 @@ console.log(board.hit(new Point(5, 7)));
 console.log(board.hit(new Point(5, 6)));
 console.log(board.hit(new Point(5, 5)));
 
-console.log(board.draw());
+console.log(board.draw(formatter, false));

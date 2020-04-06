@@ -82,8 +82,9 @@ GET /games/:id
 ```bash
 POST /games
 {
-    rows: 10,
-    columns: 10
+    rows: 10, // optional, min:10
+    columns: 10, // optional, min:10
+    rules: default|test // optional, according to rules in rootDir/lib/engine/rules.js
 }
 ```
 
@@ -94,8 +95,8 @@ PUT /games/:id/ship
 {
     x: 1,
     y: 2,
-    type: submarine,
-    direction: right
+    type: submarine, // according to rules in rootDir/lib/engine/rules.js
+    direction: right // right|left|up|down
 }
 ```
 

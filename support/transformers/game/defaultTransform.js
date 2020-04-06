@@ -6,7 +6,7 @@ const POINT_HIT = 2;
 
 module.exports = (doc, ret, options) => {
 
-    if (doc.status === constants.STATUS_NEW) {
+    if (doc.status === constants.STATUS_READY) {
         // Hide ships positions
         ret.layout = math.matrix(ret.layout).map(function (value, index, matrix) {
             if (helpers.isObject(value)) {

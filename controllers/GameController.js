@@ -17,9 +17,7 @@ module.exports.index = wrap(async (req, res) => {
     const errors = validationResult(req);
 
     if (! errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.mapped()
-        });
+        return res.status(422).json({ errors: errors.mapped() });
     }
 
     const offset = req.query.offset || 0;
@@ -38,9 +36,7 @@ module.exports.show = wrap(async (req, res) => {
     const model = await Game.findById(req.params.id);
 
     if (! model) {
-        return res.status(404).json({
-            error: 'Game not found.'
-        });
+        return res.status(404).json({ errors: ['Game not found.'] });
     }
 
     const board = new Board();
@@ -54,20 +50,19 @@ module.exports.store = wrap(async (req, res) => {
 
     await check('rows').isInt({ min: 10 }).optional().withMessage('the board should be at least 10 x 10.').run(req);
     await check('columns').isInt({ min: 10 }).optional().withMessage('the board should be at least 10 x 10.').run(req);
+    await check('rules').isIn(Object.keys(rules)).optional().withMessage('unknown rules.').run(req);
 
     const { rows, columns } = req.body;
 
     const errors = validationResult(req);
 
     if (! errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.mapped()
-        });
+        return res.status(422).json({ errors: errors.mapped() });
     }
 
     const board = new Board();
 
-    board.newGame(rules.default, rows || 10, columns || 10);
+    board.newGame(rules[req.body.rules] || rules.default, rows || 10, columns || 10);
 
     const model = await Game.create({
         status: board.status,
@@ -81,9 +76,15 @@ module.exports.store = wrap(async (req, res) => {
 
 module.exports.ship = wrap(async (req, res) => {
 
+    const model = await Game.findById(req.params.id);
+
+    if (! model) {
+        return res.status(404).json({ errors: ['Game not found.'] });
+    }
+
     await check('x').isInt({ min: 0 }).withMessage('coordinates required.').run(req);
     await check('y').isInt({ min: 0 }).withMessage('coordinates required.').run(req);
-    await check('type').isIn(Object.keys(rules.default)).withMessage('unknown type.').run(req);
+    await check('type').isIn(Object.keys(model.rules)).withMessage('unknown type.').run(req);
     await check('direction').isIn([
         constants.DIRECTION_UP,
         constants.DIRECTION_DOWN,
@@ -94,25 +95,13 @@ module.exports.ship = wrap(async (req, res) => {
     const errors = validationResult(req);
 
     if (! errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.mapped()
-        });
+        return res.status(422).json({ errors: errors.mapped() });
     }
 
     const { x, y, type, direction } = req.body;
 
-    const model = await Game.findById(req.params.id);
-
-    if (! model) {
-        return res.status(404).json({
-            errors: ['Game not found.']
-        });
-    }
-
     if (model.status !== constants.STATUS_NEW) {
-        return res.status(422).json({
-            errors: ['All ships are already placed.']
-        });
+        return res.status(422).json({ errors: ['All ships are already placed.'] });
     }
 
     const board = new Board();
@@ -144,9 +133,7 @@ module.exports.attack = wrap(async (req, res) => {
     const errors = validationResult(req);
 
     if (! errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.mapped()
-        });
+        return res.status(422).json({ errors: errors.mapped() });
     }
 
     const { x, y } = req.body;
@@ -154,9 +141,7 @@ module.exports.attack = wrap(async (req, res) => {
     const model = await Game.findById(req.params.id);
 
     if (! model) {
-        return res.status(404).json({
-            errors: ['Game not found.']
-        });
+        return res.status(404).json({ errors: ['Game not found.'] });
     }
 
     const board = new Board();
